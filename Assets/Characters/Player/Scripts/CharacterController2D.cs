@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Events;
 
 public class CharacterController2D : MonoBehaviour
@@ -19,6 +20,7 @@ public class CharacterController2D : MonoBehaviour
 	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
 
+    // Events
 	[Header("Events")]
 	[Space]
 
@@ -29,6 +31,10 @@ public class CharacterController2D : MonoBehaviour
 
 	public BoolEvent OnCrouchEvent;
 	private bool m_wasCrouching = false;
+
+    // Interactions
+    private List<GameObject> itemsWithinReach = new List<GameObject>(); 
+
 
 	private void Awake()
 	{
@@ -41,7 +47,12 @@ public class CharacterController2D : MonoBehaviour
 			OnCrouchEvent = new BoolEvent();
 	}
 
-	private void FixedUpdate()
+    private void Update()
+    {
+        RegisterInputs();
+    }
+
+    private void FixedUpdate()
 	{
 		bool wasGrounded = m_Grounded;
 		m_Grounded = false;
@@ -60,8 +71,41 @@ public class CharacterController2D : MonoBehaviour
 		}
 	}
 
+    private void RegisterInputs()
+    {
+        if (Input.GetButtonUp("Grab"))
+        {
+            for (int i = 0; i < itemsWithinReach.Count; i++)
+            {
+                PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+                Item item = itemsWithinReach[i].GetComponent<Item>();
+                if (playerInventory != null && item != null)
+                {
+                    playerInventory.ReceiveItem(item.itemID);
+                }
+                itemsWithinReach[i].SetActive(false);
+            }
+            itemsWithinReach.Clear();
+        }
+    }
 
-	public void Move(float move, bool crouch, bool jump)
+    private void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.gameObject.tag.ToLower() == "item")
+        {
+            itemsWithinReach.Add(collider.gameObject);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collider)
+    {
+        if (collider.gameObject.tag.ToLower() == "item")
+        {
+            itemsWithinReach.Remove(collider.gameObject);
+        }
+    }
+
+    public void Move(float move, bool crouch, bool jump)
 	{
 		// If crouching, check to see if the character can stand up
 		if (!crouch)
@@ -132,7 +176,6 @@ public class CharacterController2D : MonoBehaviour
 			m_Rigidbody2D.AddForce(new Vector2(0f, m_JumpForce));
 		}
 	}
-
 
 	private void Flip()
 	{
