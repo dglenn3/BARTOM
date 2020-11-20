@@ -1,27 +1,37 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 public class CharacterController2D : MonoBehaviour
 {
-	[SerializeField] private float m_JumpForce = 400f;                          // Amount of force added when the player jumps.
-	[Range(0, 1)] [SerializeField] private float m_CrouchSpeed = .36f;          // Amount of maxSpeed applied to crouching movement. 1 = 100%
-	[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;  // How much to smooth out the movement
-	[SerializeField] private bool m_AirControl = false;                         // Whether or not a player can steer while jumping;
-	[SerializeField] private LayerMask m_WhatIsGround;                          // A mask determining what is ground to the character
-	[SerializeField] private Transform m_GroundCheck;                           // A position marking where to check if the player is grounded.
-	[SerializeField] private Transform m_CeilingCheck;                          // A position marking where to check for ceilings
-	[SerializeField] private Collider2D m_CrouchDisableCollider;                // A collider that will be disabled when crouching
+	[SerializeField] private float m_JumpForce = 400f;                              // Amount of force added when the player jumps.
+	[Range(0, 1)] [SerializeField] private float m_DuckSpeed = .36f;                // Amount of maxSpeed applied to ducking movement. 1 = 100%
+	[Range(0, .3f)] [SerializeField] private float m_MovementSmoothing = .05f;      // How much to smooth out the movement
+	[SerializeField] private bool m_AirControl = false;                             // Whether or not a player can steer while jumping;
+	[SerializeField] private LayerMask m_WhatIsGround = new LayerMask();            // A mask determining what is ground to the character
+    [SerializeField] private Transform m_GroundCheck;                               // A position marking where to check if the player is grounded.
+	[SerializeField] private Transform m_CeilingCheck;                              // A position marking where to check for ceilings
+	[SerializeField] private Collider2D m_DuckDisableCollider = new Collider2D();   // A collider that will be disabled when ducking
 
-	const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
-	private bool m_Grounded;            // Whether or not the player is grounded.
-	const float k_CeilingRadius = .2f; // Radius of the overlap circle to determine if the player can stand up
+	const float k_GroundedRadius = .2f;         // Radius of the overlap circle to determine if grounded
+	private bool m_Grounded;                    // Whether or not the player is grounded.
+	const float k_CeilingRadius = .2f;          // Radius of the overlap circle to determine if the player can stand up
 	private Rigidbody2D m_Rigidbody2D;
-	private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+	private bool m_FacingRight = true;          // For determining which way the player is currently facing.
 	private Vector3 m_Velocity = Vector3.zero;
 
+    // Movement
+    [Header("Movement")]
+    [Space]
+
+    public float movementSpeed = 20f;
+    private float movementInput = 0f;
+    private bool duck = false;
+    private bool jump = false;
+
     // Events
-	[Header("Events")]
+    [Header("Events")]
 	[Space]
 
 	public UnityEvent OnLandEvent;
@@ -29,27 +39,35 @@ public class CharacterController2D : MonoBehaviour
 	[System.Serializable]
 	public class BoolEvent : UnityEvent<bool> { }
 
-	public BoolEvent OnCrouchEvent;
-	private bool m_wasCrouching = false;
+	public BoolEvent OnDuckEvent;
+	private bool m_wasDucking = false;
 
     // Interactions
-    private List<GameObject> itemsWithinReach = new List<GameObject>(); 
+    private List<GameObject> itemsWithinReach = new List<GameObject>();
 
+    // Inputs
+    private ControlBindings controlBindings;
 
 	private void Awake()
 	{
-		m_Rigidbody2D = GetComponent<Rigidbody2D>();
+        m_Rigidbody2D = GetComponent<Rigidbody2D>();
 
 		if (OnLandEvent == null)
 			OnLandEvent = new UnityEvent();
 
-		if (OnCrouchEvent == null)
-			OnCrouchEvent = new BoolEvent();
+		if (OnDuckEvent == null)
+			OnDuckEvent = new BoolEvent();
 	}
 
-    private void Update()
+    private void OnEnable()
     {
-        RegisterInputs();
+        controlBindings = new ControlBindings();
+        Subscribe();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
     }
 
     private void FixedUpdate()
@@ -69,24 +87,59 @@ public class CharacterController2D : MonoBehaviour
 					OnLandEvent.Invoke();
 			}
 		}
+
+        Move(movementInput * movementSpeed * Time.fixedDeltaTime);
+        jump = false;
 	}
 
-    private void RegisterInputs()
+    private void Subscribe()
     {
-        if (Input.GetButtonUp("Grab"))
+        controlBindings.Chester.Duck.performed += context => duck = true;
+        controlBindings.Chester.Duck.canceled += context => duck = false;
+
+        controlBindings.Chester.Grab.performed += Input_Grab;
+        controlBindings.Chester.Jump.performed += context => jump = true;
+
+        controlBindings.Chester.Move.started += Input_Move;
+        controlBindings.Chester.Move.performed += Input_Move;
+        controlBindings.Chester.Move.canceled += Input_Move;
+
+        controlBindings.Chester.Enable();
+    }
+
+    private void Unsubscribe()
+    {
+        controlBindings.Chester.Duck.performed -= context => duck = true;
+        controlBindings.Chester.Duck.canceled -= context => duck = false;
+
+        controlBindings.Chester.Grab.performed -= Input_Grab;
+        controlBindings.Chester.Jump.performed -= context => jump = true;
+
+        controlBindings.Chester.Move.started -= Input_Move;
+        controlBindings.Chester.Move.performed -= Input_Move;
+        controlBindings.Chester.Move.canceled -= Input_Move;
+
+        controlBindings.Chester.Disable();
+    }
+
+    private void Input_Grab(InputAction.CallbackContext context)
+    {
+        for (int i = 0; i < itemsWithinReach.Count; i++)
         {
-            for (int i = 0; i < itemsWithinReach.Count; i++)
+            PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+            Item item = itemsWithinReach[i].GetComponent<Item>();
+            if (playerInventory != null && item != null)
             {
-                PlayerInventory playerInventory = GetComponent<PlayerInventory>();
-                Item item = itemsWithinReach[i].GetComponent<Item>();
-                if (playerInventory != null && item != null)
-                {
-                    playerInventory.ReceiveItem(item.itemID);
-                }
-                itemsWithinReach[i].SetActive(false);
+                playerInventory.ReceiveItem(item.itemID);
             }
-            itemsWithinReach.Clear();
+            itemsWithinReach[i].SetActive(false);
         }
+        itemsWithinReach.Clear();
+    }
+
+    private void Input_Move(InputAction.CallbackContext context)
+    {
+        movementInput = context.ReadValue<float>();
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
@@ -105,48 +158,51 @@ public class CharacterController2D : MonoBehaviour
         }
     }
 
-    public void Move(float move, bool crouch, bool jump)
-	{
-		// If crouching, check to see if the character can stand up
-		if (!crouch)
+    public void Move(float move)
+    {
+		/*
+         * TODO: Currently this code is causing duck to always be true
+        // If ducking, check to see if the character can stand up
+		if (!duck)
 		{
 			// If the character has a ceiling preventing them from standing up, keep them crouching
 			if (Physics2D.OverlapCircle(m_CeilingCheck.position, k_CeilingRadius, m_WhatIsGround))
 			{
-				crouch = true;
+                duck = true;
 			}
 		}
+        */
 
 		//only control the player if grounded or airControl is turned on
 		if (m_Grounded || m_AirControl)
 		{
 
-			// If crouching
-			if (crouch)
+			// If ducking
+			if (duck)
 			{
-				if (!m_wasCrouching)
+				if (!m_wasDucking)
 				{
-					m_wasCrouching = true;
-					OnCrouchEvent.Invoke(true);
+					m_wasDucking = true;
+					OnDuckEvent.Invoke(true);
 				}
 
-				// Reduce the speed by the crouchSpeed multiplier
-				move *= m_CrouchSpeed;
+				// Reduce the speed by the duckSpeed multiplier
+				move *= m_DuckSpeed;
 
-				// Disable one of the colliders when crouching
-				if (m_CrouchDisableCollider != null)
-					m_CrouchDisableCollider.enabled = false;
+				// Disable one of the colliders when ducking
+				if (m_DuckDisableCollider != null)
+					m_DuckDisableCollider.enabled = false;
 			}
 			else
 			{
-				// Enable the collider when not crouching
-				if (m_CrouchDisableCollider != null)
-					m_CrouchDisableCollider.enabled = true;
+				// Enable the collider when not ducking
+				if (m_DuckDisableCollider != null)
+					m_DuckDisableCollider.enabled = true;
 
-				if (m_wasCrouching)
+				if (m_wasDucking)
 				{
-					m_wasCrouching = false;
-					OnCrouchEvent.Invoke(false);
+					m_wasDucking = false;
+					OnDuckEvent.Invoke(false);
 				}
 			}
 

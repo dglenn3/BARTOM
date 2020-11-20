@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemID: 1
-  itemIcon: {fileID: 21300000, guid: d82f5e31a75ed264190cc6c76d2cb7c7, type: 3}
+  itemIcon: {fileID: 21300000, guid: bd59bf2e866ed4529ae645637eb9c11d, type: 3}
 --- !u!212 &3222975252984375563
 SpriteRenderer:
   m_ObjectHideFlags: 0

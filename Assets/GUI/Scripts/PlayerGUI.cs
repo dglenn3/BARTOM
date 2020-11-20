@@ -7,9 +7,14 @@ public class PlayerGUI : MonoBehaviour
 {
     public GameObject inventoryPanel;
 
-    private void Start()
+    private void OnEnable()
     {
         Subscribe();
+    }
+
+    private void OnDisable()
+    {
+        Unsubscribe();
     }
 
     private void Subscribe()

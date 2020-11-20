@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6620848772133990124}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.0074, y: 0.0149, z: 0}
+  m_LocalPosition: {x: -0.0074, y: 0.065, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6620848773165726232}
@@ -70,13 +70,13 @@ GameObject:
   m_Component:
   - component: {fileID: 6620848773165726232}
   - component: {fileID: 6620848773165726238}
-  - component: {fileID: 6620848773165726237}
   - component: {fileID: -6330147595464691586}
   - component: {fileID: 6620848773165726239}
   - component: {fileID: 6620848773165726235}
   - component: {fileID: 6620848773165726234}
   - component: {fileID: 6620848773165726233}
   - component: {fileID: 6620848773165726236}
+  - component: {fileID: 1654623616}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -113,7 +113,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_JumpForce: 200
-  m_CrouchSpeed: 0.4
+  m_DuckSpeed: 0.36
   m_MovementSmoothing: 0.05
   m_AirControl: 1
   m_WhatIsGround:
@@ -121,28 +121,14 @@ MonoBehaviour:
     m_Bits: 23
   m_GroundCheck: {fileID: 6620848772342359943}
   m_CeilingCheck: {fileID: 6620848772133990125}
-  m_CrouchDisableCollider: {fileID: 6620848773165726239}
+  m_DuckDisableCollider: {fileID: 6620848773165726239}
+  movementSpeed: 10
   OnLandEvent:
     m_PersistentCalls:
       m_Calls: []
-  OnCrouchEvent:
+  OnDuckEvent:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &6620848773165726237
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6620848773165726229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9adb27fbbaa43344a8b8f7614b71290, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  controller: {fileID: 6620848773165726238}
-  horizontalMove: 0
-  runSpeed: 20
 --- !u!114 &-6330147595464691586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,3 +273,15 @@ CircleCollider2D:
   m_Offset: {x: 0, y: -0.084194206}
   serializedVersion: 2
   m_Radius: 0.07429547
+--- !u!114 &1654623616
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6620848773165726229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58299a1c7fd6b5942afa08dd9dbda46a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
