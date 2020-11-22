@@ -49,6 +49,14 @@ public class @ControlBindings : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Dpad"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""ToggleInventory"",
+                    ""type"": ""Button"",
+                    ""id"": ""92384686-e3bb-4021-b82d-9029c4e9d408"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -117,6 +125,17 @@ public class @ControlBindings : IInputActionCollection, IDisposable
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""510aacab-87e8-422c-a55e-a7016f5b8ab8"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""ToggleInventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -129,6 +148,7 @@ public class @ControlBindings : IInputActionCollection, IDisposable
         m_Chester_Grab = m_Chester.FindAction("Grab", throwIfNotFound: true);
         m_Chester_Jump = m_Chester.FindAction("Jump", throwIfNotFound: true);
         m_Chester_Move = m_Chester.FindAction("Move", throwIfNotFound: true);
+        m_Chester_ToggleInventory = m_Chester.FindAction("ToggleInventory", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -182,6 +202,7 @@ public class @ControlBindings : IInputActionCollection, IDisposable
     private readonly InputAction m_Chester_Grab;
     private readonly InputAction m_Chester_Jump;
     private readonly InputAction m_Chester_Move;
+    private readonly InputAction m_Chester_ToggleInventory;
     public struct ChesterActions
     {
         private @ControlBindings m_Wrapper;
@@ -190,6 +211,7 @@ public class @ControlBindings : IInputActionCollection, IDisposable
         public InputAction @Grab => m_Wrapper.m_Chester_Grab;
         public InputAction @Jump => m_Wrapper.m_Chester_Jump;
         public InputAction @Move => m_Wrapper.m_Chester_Move;
+        public InputAction @ToggleInventory => m_Wrapper.m_Chester_ToggleInventory;
         public InputActionMap Get() { return m_Wrapper.m_Chester; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -211,6 +233,9 @@ public class @ControlBindings : IInputActionCollection, IDisposable
                 @Move.started -= m_Wrapper.m_ChesterActionsCallbackInterface.OnMove;
                 @Move.performed -= m_Wrapper.m_ChesterActionsCallbackInterface.OnMove;
                 @Move.canceled -= m_Wrapper.m_ChesterActionsCallbackInterface.OnMove;
+                @ToggleInventory.started -= m_Wrapper.m_ChesterActionsCallbackInterface.OnToggleInventory;
+                @ToggleInventory.performed -= m_Wrapper.m_ChesterActionsCallbackInterface.OnToggleInventory;
+                @ToggleInventory.canceled -= m_Wrapper.m_ChesterActionsCallbackInterface.OnToggleInventory;
             }
             m_Wrapper.m_ChesterActionsCallbackInterface = instance;
             if (instance != null)
@@ -227,6 +252,9 @@ public class @ControlBindings : IInputActionCollection, IDisposable
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @ToggleInventory.started += instance.OnToggleInventory;
+                @ToggleInventory.performed += instance.OnToggleInventory;
+                @ToggleInventory.canceled += instance.OnToggleInventory;
             }
         }
     }
@@ -237,5 +265,6 @@ public class @ControlBindings : IInputActionCollection, IDisposable
         void OnGrab(InputAction.CallbackContext context);
         void OnJump(InputAction.CallbackContext context);
         void OnMove(InputAction.CallbackContext context);
+        void OnToggleInventory(InputAction.CallbackContext context);
     }
 }

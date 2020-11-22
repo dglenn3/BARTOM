@@ -36,6 +36,14 @@
                     "expectedControlType": "Dpad",
                     "processors": "",
                     "interactions": ""
+                },
+                {
+                    "name": "ToggleInventory",
+                    "type": "Button",
+                    "id": "92384686-e3bb-4021-b82d-9029c4e9d408",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
                 }
             ],
             "bindings": [
@@ -104,6 +112,17 @@
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "510aacab-87e8-422c-a55e-a7016f5b8ab8",
+                    "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

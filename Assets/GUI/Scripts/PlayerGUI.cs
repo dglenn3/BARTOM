@@ -12,7 +12,7 @@ public class PlayerGUI : MonoBehaviour
         Subscribe();
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         Unsubscribe();
     }
@@ -20,11 +20,13 @@ public class PlayerGUI : MonoBehaviour
     private void Subscribe()
     {
         PlayerInventory.AddNewItemEvent += OnAddNewItemEvent;
+        PlayerInventory.ToggleInventoryEvent += OnToggleInventoryEvent;
     }
 
     private void Unsubscribe()
     {
         PlayerInventory.AddNewItemEvent -= OnAddNewItemEvent;
+        PlayerInventory.ToggleInventoryEvent -= OnToggleInventoryEvent;
     }
 
     private void OnAddNewItemEvent(int itemID, int position)
@@ -35,5 +37,10 @@ public class PlayerGUI : MonoBehaviour
         {
             itemSlotImage.sprite = item.itemIcon;
         }
+    }
+
+    private void OnToggleInventoryEvent()
+    {
+        gameObject.SetActive(!gameObject.activeSelf);
     }
 }

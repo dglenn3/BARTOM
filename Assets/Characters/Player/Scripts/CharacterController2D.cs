@@ -104,6 +104,8 @@ public class CharacterController2D : MonoBehaviour
         controlBindings.Chester.Move.performed += Input_Move;
         controlBindings.Chester.Move.canceled += Input_Move;
 
+		controlBindings.Chester.ToggleInventory.performed += Input_ToggleInventory;
+
         controlBindings.Chester.Enable();
     }
 
@@ -119,7 +121,9 @@ public class CharacterController2D : MonoBehaviour
         controlBindings.Chester.Move.performed -= Input_Move;
         controlBindings.Chester.Move.canceled -= Input_Move;
 
-        controlBindings.Chester.Disable();
+		controlBindings.Chester.ToggleInventory.performed -= Input_ToggleInventory;
+
+		controlBindings.Chester.Disable();
     }
 
     private void Input_Grab(InputAction.CallbackContext context)
@@ -142,7 +146,16 @@ public class CharacterController2D : MonoBehaviour
         movementInput = context.ReadValue<float>();
     }
 
-    private void OnTriggerEnter2D(Collider2D collider)
+	private void Input_ToggleInventory(InputAction.CallbackContext context)
+	{
+		PlayerInventory playerInventory = GetComponent<PlayerInventory>();
+		if (playerInventory != null)
+		{
+			playerInventory.ToggleInventoryVisibility();
+		}
+	}
+
+	private void OnTriggerEnter2D(Collider2D collider)
     {
         if (collider.gameObject.tag.ToLower() == "item")
         {

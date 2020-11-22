@@ -9,6 +9,8 @@ public class PlayerInventory : MonoBehaviour
 
     public delegate void AddNewItem(int itemID, int position);
     public static event AddNewItem AddNewItemEvent;
+    public delegate void ToggleInventory();
+    public static event ToggleInventory ToggleInventoryEvent;
 
     private List<int> itemIDs = new List<int>();
 
@@ -33,5 +35,10 @@ public class PlayerInventory : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    public void ToggleInventoryVisibility()
+    {
+        ToggleInventoryEvent();
     }
 }
